@@ -1,0 +1,931 @@
+﻿/* ===== PAYMENT STATUS PAGES UNIFIED STYLES ===== */
+
+/* Shared variables for both success and cancelled pages */
+.payment-page {
+    /* Common variables */
+    --ps-white: #ffffff;
+    --ps-gray: #6c757d;
+    --ps-text: #2c3e50;
+    --ps-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    --ps-radius: 20px;
+    --ps-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ===== SUCCESS PAGE SPECIFIC STYLES ===== */
+.payment-success-page {
+    /* Success-specific variables */
+    --ps-primary: #28a745;
+    --ps-primary-light: #d4edda;
+    --ps-secondary: #20c997;
+    --ps-accent: #17a2b8;
+    background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 50%, #ffffff 100%);
+}
+
+/* ===== CANCELLED PAGE SPECIFIC STYLES ===== */
+.payment-cancelled-page {
+    /* Cancelled-specific variables */
+    --ps-primary: #dc3545;
+    --ps-primary-light: #f8d7da;
+    --ps-secondary: #6c757d;
+    --ps-accent: #fd7e14;
+    background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 50%, #ffffff 100%);
+}
+
+/* ===== CONFETTI ANIMATION (SUCCESS ONLY) ===== */
+.payment-success-page .confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.payment-success-page .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--ps-primary);
+    animation: confetti-fall 3s linear infinite;
+}
+
+    .payment-success-page .confetti:nth-child(2n) {
+        background: var(--ps-secondary);
+    }
+
+    .payment-success-page .confetti:nth-child(3n) {
+        background: var(--ps-accent);
+    }
+
+    .payment-success-page .confetti:nth-child(4n) {
+        background: #ffc107;
+    }
+
+/* ===== FLOATING ELEMENTS ===== */
+.payment-success-page .floating-success {
+    position: fixed;
+    font-size: 2rem;
+    pointer-events: none;
+    z-index: 5;
+    animation: float-celebration 8s infinite ease-in-out;
+}
+
+    .payment-success-page .floating-success:nth-child(1) {
+        top: 15%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .payment-success-page .floating-success:nth-child(2) {
+        top: 25%;
+        right: 15%;
+        animation-delay: -2s;
+    }
+
+    .payment-success-page .floating-success:nth-child(3) {
+        bottom: 20%;
+        left: 20%;
+        animation-delay: -4s;
+    }
+
+/* Floating elements for cancelled page */
+.payment-cancelled-page .floating-elements {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.payment-cancelled-page .floating-circle {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(220, 53, 69, 0.1), rgba(220, 53, 69, 0.05));
+    animation: float 20s infinite linear;
+}
+
+    .payment-cancelled-page .floating-circle:nth-child(1) {
+        width: 120px;
+        height: 120px;
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .payment-cancelled-page .floating-circle:nth-child(2) {
+        width: 200px;
+        height: 200px;
+        top: 60%;
+        right: 15%;
+        animation-delay: -7s;
+    }
+
+    .payment-cancelled-page .floating-circle:nth-child(3) {
+        width: 80px;
+        height: 80px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: -14s;
+    }
+
+/* ===== CONTAINER ===== */
+.payment-page .container-custom {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    position: relative;
+    z-index: 10;
+}
+
+/* ===== BREADCRUMB (CANCELLED ONLY) ===== */
+.payment-cancelled-page .breadcrumb-section {
+    margin-bottom: 2rem;
+}
+
+.payment-cancelled-page .breadcrumb-custom {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 1rem 1.5rem;
+    border-radius: var(--ps-radius);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(220, 53, 69, 0.1);
+}
+
+.payment-cancelled-page .breadcrumb-item a {
+    color: var(--ps-gray);
+    text-decoration: none;
+    transition: var(--ps-transition);
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+}
+
+    .payment-cancelled-page .breadcrumb-item a:hover {
+        color: var(--ps-primary);
+        background: rgba(220, 53, 69, 0.1);
+    }
+
+.payment-cancelled-page .breadcrumb-item.active {
+    color: var(--ps-primary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.payment-cancelled-page .breadcrumb-separator {
+    color: var(--ps-gray);
+    opacity: 0.5;
+}
+
+/* ===== MAIN CARD ===== */
+.payment-page .main-card {
+    background: var(--ps-white);
+    border-radius: var(--ps-radius);
+    box-shadow: var(--ps-shadow);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.6s ease-out;
+}
+
+/* ===== CARD HEADER ===== */
+.payment-page .card-header {
+    color: var(--ps-white);
+    text-align: center;
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-success-page .card-header {
+    background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.payment-cancelled-page .card-header {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+}
+
+.payment-page .card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.3;
+}
+
+.payment-page .status-icon {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 3rem;
+    backdrop-filter: blur(10px);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+.payment-success-page .status-icon {
+    animation: success-pulse 2s infinite;
+}
+
+.payment-cancelled-page .status-icon {
+    animation: pulse 2s infinite;
+}
+
+.payment-page .main-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 2;
+}
+
+.payment-page .main-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    line-height: 1.6;
+    margin: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.payment-success-page .celebration-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    margin-top: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 700;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+/* ===== CARD BODY ===== */
+.payment-page .card-body {
+    padding: 2.5rem;
+}
+
+/* ===== ACTIVATION ALERT (SUCCESS ONLY) ===== */
+.payment-success-page .activation-alert {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    border: 2px solid rgba(40, 167, 69, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+    .payment-success-page .activation-alert::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+
+.payment-success-page .alert-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.payment-success-page .alert-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #28a745;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.payment-success-page .alert-message {
+    color: var(--ps-gray);
+    line-height: 1.6;
+    margin: 0;
+    position: relative;
+    z-index: 2;
+}
+
+/* ===== PACKAGE SHOWCASE ===== */
+.payment-page .package-showcase {
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.payment-success-page .package-showcase {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    border-color: rgba(40, 167, 69, 0.2);
+}
+
+.payment-cancelled-page .package-showcase {
+    background: linear-gradient(135deg, #f8d7da, #f1aeb5);
+    border-color: rgba(220, 53, 69, 0.2);
+}
+
+.payment-page .package-showcase::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: rotate(45deg);
+    animation: shimmer 3s infinite;
+}
+
+.payment-page .package-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--ps-white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 2rem;
+    color: var(--ps-primary);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
+}
+
+.payment-page .package-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ps-primary);
+    margin-bottom: 0.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.payment-cancelled-page .package-limit {
+    color: var(--ps-gray);
+    font-weight: 600;
+    position: relative;
+    z-index: 2;
+}
+
+/* Package benefits (SUCCESS ONLY) */
+.payment-success-page .package-benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 2;
+}
+
+.payment-success-page .benefit-item {
+    background: var(--ps-white);
+    padding: 1rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.1);
+    transition: var(--ps-transition);
+}
+
+    .payment-success-page .benefit-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+    }
+
+.payment-success-page .benefit-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.payment-success-page .benefit-text {
+    font-weight: 600;
+    color: var(--ps-text);
+    font-size: 0.9rem;
+}
+
+/* ===== INFO GRID ===== */
+.payment-page .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.payment-page .info-item {
+    background: linear-gradient(135deg, #fafafa, #ffffff);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 2px solid #f0f0f0;
+    transition: var(--ps-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+    .payment-page .info-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+.payment-success-page .info-item:hover {
+    border-color: rgba(40, 167, 69, 0.2);
+}
+
+.payment-cancelled-page .info-item:hover {
+    border-color: rgba(220, 53, 69, 0.2);
+}
+
+.payment-page .info-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--ps-primary), rgba(0, 0, 0, 0.3));
+}
+
+.payment-page .info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--ps-gray);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+    .payment-page .info-label i {
+        color: var(--ps-primary);
+        font-size: 1.1rem;
+    }
+
+.payment-page .info-value {
+    color: var(--ps-text);
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.payment-page .transaction-code {
+    font-family: 'Courier New', monospace;
+    background: var(--ps-primary-light);
+    color: var(--ps-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: var(--ps-transition);
+}
+
+    .payment-page .transaction-code:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+.payment-page .amount-display {
+    font-size: 1.3rem;
+    color: var(--ps-primary);
+    font-weight: 800;
+}
+
+.payment-page .original-price {
+    text-decoration: line-through;
+    color: var(--ps-gray);
+    font-size: 1rem;
+}
+
+.payment-page .discount-badge {
+    color: var(--ps-white);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.payment-success-page .discount-badge {
+    background: linear-gradient(45deg, #28a745, #34ce57);
+}
+
+.payment-cancelled-page .discount-badge {
+    background: linear-gradient(45deg, #28a745, #34ce57);
+}
+
+.payment-page .status-badge {
+    color: var(--ps-white);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.payment-success-page .status-badge {
+    background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.payment-cancelled-page .status-badge {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+}
+
+/* ===== NEXT STEPS (SUCCESS ONLY) ===== */
+.payment-success-page .next-steps {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 2px solid #e9ecef;
+    position: relative;
+}
+
+    .payment-success-page .next-steps::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #28a745, #20c997);
+        border-radius: 15px 15px 0 0;
+    }
+
+.payment-success-page .next-steps-title {
+    color: var(--ps-text);
+    font-weight: 700;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.payment-success-page .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.payment-success-page .step-item {
+    background: var(--ps-white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    transition: var(--ps-transition);
+    position: relative;
+    overflow: hidden;
+}
+
+    .payment-success-page .step-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.15);
+    }
+
+.payment-success-page .step-number {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: var(--ps-white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.payment-success-page .step-title {
+    font-weight: 700;
+    color: var(--ps-text);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.payment-success-page .step-description {
+    color: var(--ps-gray);
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+/* ===== HELP SECTION (CANCELLED ONLY) ===== */
+.payment-cancelled-page .help-section {
+    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 2px solid #e9ecef;
+    position: relative;
+}
+
+    .payment-cancelled-page .help-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #dc3545, #6c757d);
+        border-radius: 15px 15px 0 0;
+    }
+
+.payment-cancelled-page .help-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ps-text);
+    margin-bottom: 1rem;
+}
+
+    .payment-cancelled-page .help-title i {
+        color: var(--ps-primary);
+        font-size: 1.5rem;
+    }
+
+.payment-cancelled-page .help-content {
+    color: var(--ps-gray);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+}
+
+.payment-cancelled-page .contact-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.payment-cancelled-page .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--ps-white);
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    transition: var(--ps-transition);
+    cursor: pointer;
+}
+
+    .payment-cancelled-page .contact-item:hover {
+        background: var(--ps-primary-light);
+        border-color: var(--ps-primary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+    }
+
+    .payment-cancelled-page .contact-item i {
+        color: var(--ps-primary);
+        font-size: 1.2rem;
+        width: 20px;
+        text-align: center;
+    }
+
+    .payment-cancelled-page .contact-item span {
+        color: var(--ps-text);
+        font-weight: 600;
+    }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .payment-page .container-custom {
+        padding: 1rem 0.5rem;
+    }
+
+    .payment-page .card-header {
+        padding: 2rem 1rem;
+    }
+
+    .payment-page .main-title {
+        font-size: 2rem;
+    }
+
+    .payment-page .status-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+
+    .payment-page .card-body {
+        padding: 1.5rem;
+    }
+
+    .payment-page .info-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .payment-page .package-showcase {
+        padding: 1.5rem;
+    }
+
+    .payment-success-page .package-benefits {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .payment-success-page .steps-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-cancelled-page .help-section {
+        padding: 1.5rem;
+    }
+
+    .payment-cancelled-page .contact-info {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-cancelled-page .breadcrumb-custom {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .payment-page .main-title {
+        font-size: 1.75rem;
+    }
+
+    .payment-page .main-subtitle {
+        font-size: 1rem;
+    }
+
+    .payment-page .package-name {
+        font-size: 1.25rem;
+    }
+
+    .payment-page .info-item {
+        padding: 1rem;
+    }
+
+    .payment-page .amount-display {
+        font-size: 1.1rem;
+    }
+
+    .payment-success-page .package-benefits {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-cancelled-page .breadcrumb-custom {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+@keyframes float-celebration {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(-20px) rotate(5deg);
+    }
+
+    50% {
+        transform: translateY(-10px) rotate(-5deg);
+    }
+
+    75% {
+        transform: translateY(-30px) rotate(3deg);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    33% {
+        transform: translateY(-30px) rotate(120deg);
+    }
+
+    66% {
+        transform: translateY(20px) rotate(240deg);
+    }
+}
+
+@keyframes success-pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+    }
+
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 20px rgba(40, 167, 69, 0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* ===== ACCESSIBILITY & INTERACTION ===== */
+.payment-page .contact-item:focus,
+.payment-page .transaction-code:focus {
+    outline: 3px solid rgba(0, 0, 0, 0.3);
+    outline-offset: 2px;
+}
+
+.payment-page .info-item:focus-within {
+    border-color: var(--ps-primary);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+    .payment-page .confetti-container,
+    .payment-page .floating-success,
+    .payment-page .floating-elements,
+    .payment-cancelled-page .help-section {
+        display: none !important;
+    }
+
+    .payment-page .main-card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+
+    .payment-page .card-header {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+}

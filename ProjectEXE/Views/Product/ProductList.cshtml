@@ -1,0 +1,494 @@
+﻿@model ProjectEXE.ViewModel.ProductViewModel.ProductListViewModel
+@{
+    ViewData["Title"] = "Danh Sách Sản Phẩm";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/productlist.css?v=@DateTime.Now.Ticks" />
+    <link rel="stylesheet" href="~/css/quickview.css" />
+    <link rel="stylesheet" href="~/css/free-product.css" />
+
+    <style>
+        /* Quick view overlay cho tất cả sản phẩm */
+        .product-image-container {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .quick-view-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 3;
+            color: white;
+            font-weight: bold;
+        }
+
+        .product-image-container:hover .quick-view-overlay {
+            opacity: 1;
+        }
+
+        .quick-view-overlay i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        /* Đảm bảo overlay của sản phẩm miễn phí có z-index cao hơn */
+        .free-product-overlay {
+            z-index: 5;
+        }
+
+        .free-product-card:hover .quick-view-overlay {
+            opacity: 0; /* Ẩn quick view khi hover vào sản phẩm miễn phí */
+        }
+
+        .free-product-card .product-image-container:hover .free-product-overlay ~ .quick-view-overlay {
+            opacity: 0; /* Ẩn quick view khi hiển thị overlay miễn phí */
+        }
+    </style>
+}
+
+<!-- THÊM CLASS product-list-page VÀO MAIN CONTAINER -->
+<main class="container-fluid py-4 product-list-page">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/"><i class="fas fa-home me-1"></i>Trang Chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Sản Phẩm</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Sidebar với bộ lọc -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-sidebar p-3 rounded">
+                <h4 class="filter-title"><i class="fas fa-filter me-2"></i>Bộ Lọc Sản Phẩm</h4>
+
+                <form method="get" action="@Url.Action("ProductList", "Product")">
+                    <div class="filter-section">
+                        <h5>Danh Mục</h5>
+                        @await Html.PartialAsync("_CategoryHierarchy", Model.Filter.Categories)
+                    </div>
+
+                    <div class="filter-section">
+                        <h5>Giá</h5>
+                        <div class="price-range">
+                            <input type="range" class="form-range" min="0" max="5000000"
+                                   id="priceRange"
+                                   value="@(Model.Filter.MaxPrice ?? 5000000)">
+                            <div class="d-flex justify-content-between">
+                                <span>0đ</span>
+                                <span>5.000.000đ</span>
+                            </div>
+                            <div class="mt-3 row">
+                                <div class="col">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Giá từ"
+                                           name="MinPrice" value="@Model.Filter.MinPrice">
+                                </div>
+                                <div class="col">
+                                    <input type="number" class="form-control form-control-sm" placeholder="Đến"
+                                           name="MaxPrice" value="@Model.Filter.MaxPrice">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h5>Tình Trạng</h5>
+                        @foreach (var condition in Model.Filter.Conditions)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       value="@condition.ConditionId"
+                                       id="condition@(condition.ConditionId)"
+                                       name="SelectedConditionIds"
+                                       @(Model.Filter.SelectedConditionIds != null && Model.Filter.SelectedConditionIds.Contains(condition.ConditionId) ? "checked" : "")>
+                                <label class="form-check-label" for="condition@(condition.ConditionId)">
+                                    @condition.ConditionName - @condition.Description
+                                </label>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="filter-section">
+                        <h5>Sắp Xếp Theo</h5>
+                        <select name="SortBy" class="form-select">
+                            <option value="newest" selected="@(Model.Filter.SortBy == "newest")">Mới nhất</option>
+                            <option value="price_asc" selected="@(Model.Filter.SortBy == "price_asc")">Giá: Thấp đến cao</option>
+                            <option value="price_desc" selected="@(Model.Filter.SortBy == "price_desc")">Giá: Cao đến thấp</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">
+                        <i class="fas fa-search me-1"></i> Áp Dụng Bộ Lọc
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Khu vực hiển thị sản phẩm -->
+        <div class="col-lg-9">
+            <!-- Phần sắp xếp và số lượng sản phẩm -->
+            <div class="product-controls mb-4">
+                <p class="results-count mb-0">
+                    Hiển thị <strong>@(((Model.Pagination.CurrentPage - 1) * Model.Pagination.ItemsPerPage) + 1)-@(Math.Min(Model.Pagination.CurrentPage * Model.Pagination.ItemsPerPage, Model.Pagination.TotalItems))</strong>
+                    của <strong>@Model.Pagination.TotalItems</strong> sản phẩm
+                </p>
+            </div>
+
+            <!-- Grid sản phẩm -->
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                @foreach (var product in Model.Products)
+{
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card product-card h-100 @(product.Price == 0 ? "free-product-card" : "")">
+            @if (product.Price == 0)
+            {
+                <!-- Badge đặc biệt cho sản phẩm 0đ -->
+                <div class="free-product-badge">
+                    <div class="badge-content">
+                        <i class="fas fa-gift"></i>
+                        <span>MIỄN PHÍ</span>
+                    </div>
+                    <div class="badge-shine"></div>
+                </div>
+                
+                <!-- Hiệu ứng viền sáng -->
+                <div class="free-product-glow"></div>
+            }
+
+            <!-- Container ảnh với quick view cho TẤT CẢ sản phẩm -->
+            <div class="product-image-container quick-view-trigger" data-product-id="@product.ProductId">
+                <img src="@product.MainImageUrl" class="card-img-top" alt="@product.ProductName">
+                
+                @if (product.Price == 0)
+                {
+                    <!-- Overlay đặc biệt cho sản phẩm 0đ -->
+                    <div class="free-product-overlay">
+                        <div class="free-text">
+                            <i class="fas fa-star"></i>
+                            SẢN PHẨM KHUYẾN MÃI
+                        </div>
+                    </div>
+                }
+                
+                <!-- Quick view overlay cho TẤT CẢ sản phẩm -->
+                <div class="quick-view-overlay">
+                    <i class="fas fa-eye"></i>
+                    <span>Xem nhanh</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <h5 class="card-title">@product.ProductName</h5>
+                <p class="shop-name">
+                    <i class="fas fa-store-alt me-1"></i>
+                    @product.Shop.ShopName
+                </p>
+                
+                @if (product.Price == 0)
+                {
+                    <!-- Hiển thị giá đặc biệt cho sản phẩm 0đ -->
+                    <div class="free-price-container">
+                        <p class="free-price">
+                            <span class="free-text-large">MIỄN PHÍ</span>
+                            <span class="original-price-crossed">50.000₫</span>
+                        </p>
+                        <div class="limited-offer">
+                            <i class="fas fa-clock"></i>
+                            <span>Số lượng có hạn</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="price">@product.Price.ToString("N0")₫</p>
+                }
+                
+                <div class="d-flex justify-content-between">
+                    <a asp-controller="Product" asp-action="ProductDetails" asp-route-id="@product.ProductId" 
+                       class="btn @(product.Price == 0 ? "btn-free-product" : "btn-outline-primary") btn-sm">
+                        @if (product.Price == 0)
+                        {
+                            <i class="fas fa-gift me-1"></i>
+                            <span>Nhận ngay</span>
+                        }
+                        else
+                        {
+                            <i class="fas fa-eye me-1"></i>
+                            <span>Chi tiết</span>
+                        }
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+                @if (!Model.Products.Any())
+                {
+                    <div class="col-12">
+                        <div class="no-products my-5">
+                            <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+                            <h4>Không tìm thấy sản phẩm nào phù hợp</h4>
+                            <p>Vui lòng thử lại với tiêu chí tìm kiếm khác</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Phân trang -->
+            @{
+                int totalPages = Model.Pagination.TotalPages;
+                int currentPage = Model.Pagination.CurrentPage;
+            }
+
+            @if (totalPages > 1)
+            {
+                <nav class="d-flex justify-content-center mt-5">
+                    <ul class="pagination">
+                        <!-- Previous -->
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ProductList", "Product", new { page = currentPage - 1, SelectedCategoryIds = Model.Filter.SelectedCategoryIds, MinPrice = Model.Filter.MinPrice, MaxPrice = Model.Filter.MaxPrice, SelectedConditionIds = Model.Filter.SelectedConditionIds, SortBy = Model.Filter.SortBy, ShowPremiumOnly = Model.Filter.ShowPremiumOnly })" tabindex="-1" aria-disabled="@(currentPage == 1)">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+
+                        @if (totalPages <= 7)
+                        {
+                            for (int i = 1; i <= totalPages; i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("ProductList", "Product", new { page = i, SelectedCategoryIds = Model.Filter.SelectedCategoryIds, MinPrice = Model.Filter.MinPrice, MaxPrice = Model.Filter.MaxPrice, SelectedConditionIds = Model.Filter.SelectedConditionIds, SortBy = Model.Filter.SortBy, ShowPremiumOnly = Model.Filter.ShowPremiumOnly })">@i</a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            // Always show page 1
+                            <li class="page-item @(1 == currentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("ProductList", "Product", new { page = 1, SelectedCategoryIds = Model.Filter.SelectedCategoryIds, MinPrice = Model.Filter.MinPrice, MaxPrice = Model.Filter.MaxPrice, SelectedConditionIds = Model.Filter.SelectedConditionIds, SortBy = Model.Filter.SortBy, ShowPremiumOnly = Model.Filter.ShowPremiumOnly })">1</a>
+                            </li>
+
+                            if (currentPage > 4)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            for (int i = Math.Max(2, currentPage - 2); i <= Math.Min(totalPages - 1, currentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == currentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("ProductList", "Product", new { page = i, SelectedCategoryIds = Model.Filter.SelectedCategoryIds, MinPrice = Model.Filter.MinPrice, MaxPrice = Model.Filter.MaxPrice, SelectedConditionIds = Model.Filter.SelectedConditionIds, SortBy = Model.Filter.SortBy, ShowPremiumOnly = Model.Filter.ShowPremiumOnly })">@i</a>
+                                </li>
+                            }
+
+                            if (currentPage < totalPages - 3)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            // Always show last page
+                            <li class="page-item @(totalPages == currentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("ProductList", "Product", new { page = totalPages, SelectedCategoryIds = Model.Filter.SelectedCategoryIds, MinPrice = Model.Filter.MinPrice, MaxPrice = Model.Filter.MaxPrice, SelectedConditionIds = Model.Filter.SelectedConditionIds, SortBy = Model.Filter.SortBy, ShowPremiumOnly = Model.Filter.ShowPremiumOnly })">@totalPages</a>
+                            </li>
+                        }
+
+                        <!-- Next -->
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="@Url.Action("ProductList", "Product", new { page = currentPage + 1, SelectedCategoryIds = Model.Filter.SelectedCategoryIds, MinPrice = Model.Filter.MinPrice, MaxPrice = Model.Filter.MaxPrice, SelectedConditionIds = Model.Filter.SelectedConditionIds, SortBy = Model.Filter.SortBy, ShowPremiumOnly = Model.Filter.ShowPremiumOnly })">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+
+        </div>
+    </div>
+</main>
+
+<!-- Container cho modal -->
+<div id="quickViewContainer"></div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Log tất cả giá trị checkbox khi submit form để debug
+            $('form').on('submit', function() {
+                console.log("Selected categories:");
+                $('input[name="SelectedCategoryIds"]:checked').each(function() {
+                    console.log($(this).val());
+                });
+                return true; // Allow form to submit
+            });
+
+            // Thêm function giúp đồng bộ giá trị giữa thanh range và input số
+            $('#priceRange').on('input', function() {
+                $('input[name="MaxPrice"]').val($(this).val());
+            });
+
+            // Thêm animation khi lọc sản phẩm
+            $('.product-card').hide().fadeIn(400);
+
+            // Hiển thị giá tiền đã định dạng trong phần lọc giá
+            $('input[name="MinPrice"], input[name="MaxPrice"]').on('change', function() {
+                let value = parseInt($(this).val());
+                if (!isNaN(value)) {
+                    $(this).val(value);
+                }
+            });
+
+            // === QUICK VIEW FUNCTIONALITY ===
+            $('.quick-view-trigger').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const productId = $(this).data('product-id');
+                loadQuickView(productId);
+            });
+
+            function loadQuickView(productId) {
+                // Show loading modal
+                showLoadingModal();
+
+                $.ajax({
+                    url: '@Url.Action("QuickView", "Product")',
+                    type: 'GET',
+                    data: { id: productId },
+                    success: function(response) {
+                        $('#quickViewContainer').html(response);
+                        $('#quickViewModal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        hideLoadingModal();
+                        console.error('Quick view error:', error);
+
+                        // Show user-friendly error message
+                        showErrorAlert('Có lỗi xảy ra khi tải thông tin sản phẩm. Vui lòng thử lại.');
+                    }
+                });
+            }
+
+            function showLoadingModal() {
+                const loadingHtml = `
+                    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+                        <div class="modal-dialog modal-sm modal-dialog-centered">
+                            <div class="modal-content border-0 shadow">
+                                <div class="modal-body text-center py-4">
+                                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                    <h6 class="mb-0 text-muted">Đang tải thông tin sản phẩm...</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('body').append(loadingHtml);
+                $('#loadingModal').modal('show');
+            }
+
+            function hideLoadingModal() {
+                $('#loadingModal').modal('hide');
+                setTimeout(function() {
+                    $('#loadingModal').remove();
+                }, 300);
+            }
+
+            function showErrorAlert(message) {
+                const alertHtml = `
+                    <div class="alert alert-danger alert-dismissible fade show position-fixed"
+                         style="top: 20px; right: 20px; z-index: 9999; max-width: 400px;" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                $('body').append(alertHtml);
+
+                // Auto remove after 5 seconds
+                setTimeout(function() {
+                    $('.alert').alert('close');
+                }, 5000);
+            }
+
+            // Remove loading modal when quick view is shown
+            $(document).on('shown.bs.modal', '#quickViewModal', function() {
+                hideLoadingModal();
+            });
+
+            // Clean up when modal is hidden
+            $(document).on('hidden.bs.modal', '#quickViewModal', function() {
+                $('#quickViewContainer').empty();
+            });
+
+            // Prevent modal from closing when clicking on modal content
+            $(document).on('click', '#quickViewModal .modal-dialog', function(e) {
+                e.stopPropagation();
+            });
+
+            // Add smooth scroll to top when pagination is clicked
+            $('.pagination .page-link').on('click', function() {
+                $('html, body').animate({
+                    scrollTop: $('.product-controls').offset().top - 100
+                }, 500);
+            });
+
+            // Enhanced product card hover effects
+            $('.product-card').hover(
+                function() {
+                    $(this).find('.quick-view-overlay').addClass('overlay-hover');
+                },
+                function() {
+                    $(this).find('.quick-view-overlay').removeClass('overlay-hover');
+                }
+            );
+
+            // Keyboard navigation support for quick view
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && $('#quickViewModal').hasClass('show')) {
+                    $('#quickViewModal').modal('hide');
+                }
+            });
+
+            // Add loading state to filter form
+            $('form').on('submit', function() {
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i> Đang lọc...');
+                submitBtn.prop('disabled', true);
+
+                // Re-enable after a delay (in case of same-page reload)
+                setTimeout(function() {
+                    submitBtn.html(originalText);
+                    submitBtn.prop('disabled', false);
+                }, 3000);
+            });
+
+            // Improve price range display
+            $('#priceRange').on('input', function() {
+                const value = parseInt($(this).val());
+                const formattedValue = new Intl.NumberFormat('vi-VN').format(value);
+                $(this).attr('title', formattedValue + 'đ');
+            });
+
+            // Initialize tooltips if Bootstrap tooltips are available
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        });
+    </script>
+}
